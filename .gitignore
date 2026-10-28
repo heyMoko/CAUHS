@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.xlsx
+*.xls
+*.csv
+.env*
+!.env.example
+.wrangler/
+work/
+*.log
+
