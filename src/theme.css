@@ -107,6 +107,13 @@
 }
 .theme-toggle:hover { background: #f2f7f5; }
 
+.content-footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; }
+.content-footer > span:last-child { justify-self: end; }
+.service-contact { justify-self: center; color: #788d85; white-space: nowrap; }
+.service-contact:hover { color: #087f91; text-decoration: underline; }
+:root[data-theme="dark"] .service-contact { color: #a2bdb3; }
+:root[data-theme="dark"] .service-contact:hover { color: #78d6c7; }
+
 @media (max-width: 900px) {
   .theme-toggle { order: 2; margin-left: auto; }
   .main-nav { order: 3; }
@@ -114,4 +121,6 @@
 @media (max-width: 560px) {
   .theme-toggle { font-size: 0; padding: 9px; }
   .theme-toggle svg { width: 17px; height: 17px; }
+  .content-footer { display: flex; flex-direction: column; gap: 8px; }
+  .content-footer > span:last-child { align-self: center; }
 }
