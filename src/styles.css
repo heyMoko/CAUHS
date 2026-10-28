@@ -21,3 +21,86 @@
 main{margin-left:0}.topbar{height:56px;padding:0 clamp(20px,4vw,64px)}.mobile-toggle{display:none}
 @media(max-width:900px){.site-header{height:auto;min-height:72px;flex-wrap:wrap;gap:10px 24px;padding:10px 20px}.main-nav{order:3;width:100%;height:40px;overflow:auto}.main-nav button{padding:0 10px}.header-local{margin-left:auto}.content{padding-top:28px}}
 @media(max-width:560px){.site-brand{font-size:18px}.site-brand .brand-logo{width:53px;height:40px}.site-brand small{font-size:9px}.header-local{font-size:0}.header-local .local-dot{font-size:initial}.main-nav{gap:2px}.main-nav button{font-size:10px;gap:5px}.main-nav button svg{width:14px}.topbar{height:48px}.breadcrumb{font-size:9px}.content{padding:23px 15px 15px}.page-heading{align-items:flex-start;flex-direction:column}.page-heading h1{font-size:24px}}
+
+/* Readability pass: larger type, stronger text contrast, and clearer status colors. */
+:root{font-size:15px;color:#172a26;background:#f4f7f6;--green:#087f68;--text:#172a26;--muted:#52645f;--border:#d6e0dc}
+body,.app-shell{background:#f4f7f6;color:#172a26}
+.site-header,.topbar{background:#fff;border-color:#d6e0dc}
+.site-brand,.page-heading h1,.panel-heading h2,.metric>strong,.budget-intro strong,.document-summary strong{color:#172a26}
+.site-brand small,.breadcrumb,.page-heading p,.panel-heading p,.metric-top,.document-summary p,.header-local,.content-footer{color:#52645f}
+.page-heading h1{font-size:34px;letter-spacing:-1px}
+.page-heading p{font-size:15px}
+.eyebrow{font-size:12px;color:#53665f;letter-spacing:1.2px}
+.main-nav button{font-size:14px;color:#465852}
+.main-nav button.active{background:#dff2ec;color:#075f50}
+.main-nav button.active svg{color:#075f50}
+.theme-toggle{font-size:13px;color:#344943;border-color:#cbd8d3}
+.topbar{height:64px}.breadcrumb{font-size:13px}.header-local{font-size:12px}
+.content{padding-top:34px}
+.primary,.secondary{font-size:13px;min-height:42px;padding:11px 17px}
+.source-bar{font-size:13px;color:#3e554d;background:#e9f1ed;border-color:#cbd9d2;min-height:50px}
+.source-tag{font-size:11px;background:#d7e8df;color:#264f40}
+.source-meta{font-size:12px;color:#52665d}
+.text-link{font-size:13px;color:#176854}
+.summary-grid{gap:18px}.metric{padding:21px 22px;border-color:#d6e0dc}
+.metric-top{font-size:14px;color:#425750}.metric-icon{width:38px;height:38px}
+.metric>strong{font-size:30px}.metric strong small{font-size:13px;color:#52645f}
+.metric p{font-size:12px;color:#52645f}.metric p b{color:#8a4b16}
+.action-metric{background:#fff9f2;border-color:#ebc99d}.action-metric>strong{color:#9a4d13}
+.panel{border-color:#d6e0dc;box-shadow:0 2px 7px #17382b0a}
+.panel-heading{padding:24px 26px 20px}.panel-heading h2{font-size:17px}.panel-heading p{font-size:13px;color:#52645f}
+.chart-legend{font-size:12px;color:#52645f}.budget-bars{min-height:225px}
+.bar-label strong,.bar-label span{font-size:13px;color:#243c34}.bar-label small{font-size:12px;color:#52645f}.bar-percent{font-size:12px;color:#52645f}
+.panel-footnote{font-size:12px;color:#52645f}
+.donut-caption{font-size:13px;color:#52645f}.donut small{font-size:12px;color:#52645f}
+.doc-types button{font-size:13px;color:#3d5149}.doc-types strong{font-size:14px;color:#243c34}.doc-types strong small{font-size:12px;color:#52645f}
+table{font-size:13px}th{font-size:12px;color:#344b43;background:#edf3f0;border-color:#d6e0dc;font-weight:650}
+td{color:#344b43;border-color:#e0e7e3}.preview-table td{padding-top:15px;padding-bottom:15px}
+.person-avatar{width:34px;height:34px;font-size:13px;background:#e5eee9;color:#245844;border-color:#cbdcd2}
+.person strong{font-size:13px;color:#1f352d}.person small{font-size:12px;color:#52645f}
+.course-title{font-size:13px;color:#243c34}.secondary-text{font-size:12px;color:#52645f}
+.phone-cell{font-size:13px;color:#344d43}.no-phone{font-size:12px;color:#79532d}
+.status{font-size:12px;padding:5px 9px;font-weight:600;max-width:140px}
+.status.missing{color:#8a350f;background:#ffeadf}.status.complete{color:#17613c;background:#e2f3e8}.status.other{color:#44535b;background:#e9eef1}
+.table-bottom{font-size:12px;color:#52645f}.table-bottom .text-link{font-size:12px}
+.count-chip{font-size:11px;background:#e6efeb;color:#34584a}
+.document-summary{gap:48px}.document-summary p{font-size:13px}.document-summary strong{font-size:27px}
+.document-tabs{gap:24px;border-color:#d6e0dc}.document-tabs button{font-size:13px;color:#52645f}.document-tabs button.selected{color:#075f50;border-color:#087f68}.document-tabs span{font-size:11px;color:#465d52;background:#e9f0eb}
+.filter-row{gap:10px}.search-field{height:44px;border-color:#cbd8d3;color:#52645f}.search-field input{font-size:13px;color:#243c34}.search-field input::placeholder{color:#687a73}
+.filter-row select{height:44px;font-size:13px;color:#344b43;border-color:#cbd8d3}
+.results-line{font-size:12px;color:#52645f}.results-line strong{color:#075f50}
+.records-table th,.records-table td{padding-top:14px;padding-bottom:14px}.employee-id{font-size:12px;color:#425e50}.course-button{font-size:13px;color:#234b3b}.date-cell{font-size:12px;color:#52645f}
+.pagination>span{font-size:12px}.pagination b{color:#075f50}
+.inline-note{font-size:12px;color:#52645f}.budget-intro{border-color:#d6e0dc}.budget-intro small{font-size:12px;color:#52645f}.budget-intro strong{font-size:27px}.budget-intro strong span{font-size:13px;color:#52645f}
+.budget-table th{font-size:12px}.budget-table td{font-size:13px}.mini-progress small{font-size:11px;color:#52645f}.count-link{font-size:12px;color:#435c4e}.count-link.has-missing{color:#8a350f;background:#ffeadf}.separate-label{font-size:10px}
+.dropzone{border-color:#9db6aa;background:#f8fbf9}.dropzone h2{font-size:20px;color:#172a26}.dropzone p{font-size:14px;color:#52645f}.dropzone>small{font-size:12px;color:#52645f}
+.upload-privacy p,.upload-tip p{font-size:12px;color:#435b50}.upload-privacy strong{color:#075f50}.upload-guide h2{font-size:27px}.guide-step>span{font-size:12px;color:#176854}.guide-step h3{font-size:14px}.guide-step p,.upload-tip p{font-size:12px;line-height:1.8;color:#52645f}
+.content-footer{font-size:12px}.service-contact{color:#176854}
+.modal h2{color:#172a26}.detail-grid dt{color:#52645f}.detail-grid dd{color:#243c34}
+.empty-state p,.small-empty{color:#52645f}
+@media(max-width:560px){.page-heading h1{font-size:27px}.main-nav button{font-size:12px}.site-brand small{font-size:10px}.content{padding-top:23px}.metric>strong{font-size:25px}}
+
+/* Make the missing-document people list comfortable to scan at a glance. */
+.preview-table{font-size:15px}
+.preview-table th{font-size:13px;padding-top:15px;padding-bottom:15px}
+.preview-table td{padding-top:18px;padding-bottom:18px}
+.preview-table .person{gap:12px}
+.preview-table .person-avatar{width:40px;height:40px;font-size:15px}
+.preview-table .person strong{font-size:15px;color:#172a26}
+.preview-table .person small{font-size:13px;color:#425850;margin-top:5px}
+.preview-table .course-title{font-size:14px;color:#1d342b;margin-bottom:5px}
+.preview-table .secondary-text{font-size:13px;color:#455a52}
+.preview-table .phone-cell{font-size:14px;color:#243c34}
+.preview-table .status{font-size:13px;padding:6px 10px;max-width:160px}
+.preview-table .icon-button{width:34px;height:34px;color:#405d50}
+@media(max-width:560px){.preview-table th{font-size:12px}.preview-table .person strong{font-size:14px}.preview-table .course-title,.preview-table .phone-cell{font-size:13px}}
+
+/* User-controlled five-step scaling for the complete dashboard. */
+:root{--ui-scale:1}
+#root{zoom:var(--ui-scale)}
+.app-shell{min-height:calc(100vh / var(--ui-scale))}
+.font-size-control{display:inline-flex;align-items:center;gap:6px;color:#344943;font-size:12px;white-space:nowrap}
+.font-size-control select{height:36px;max-width:104px;padding:0 24px 0 8px;border:1px solid #cbd8d3;border-radius:7px;background:#fff;color:#243c34;font:inherit;font-size:12px}
+.font-size-control select:focus-visible{outline:3px solid #80b6a4;outline-offset:2px}
+@media(max-width:900px){.font-size-control{order:3;margin-left:0}.main-nav{order:4}}
+@media(max-width:560px){.font-size-control{font-size:11px}.font-size-control select{height:34px;max-width:92px;font-size:11px;padding-left:6px}.theme-toggle{order:2;margin-left:auto}.font-size-control{order:3}.main-nav{order:4}}

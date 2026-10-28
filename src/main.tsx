@@ -12,6 +12,7 @@ const money = (v: number) => v.toLocaleString('ko-KR');
 const collator = new Intl.Collator('ko', {numeric:true});
 function App() {
   const [theme,setTheme] = useState<'light'|'dark'>(()=>localStorage.getItem('cauhs-theme')==='dark'?'dark':'light');
+  const [fontSize,setFontSize] = useState(()=>localStorage.getItem('cauhs-font-size')||'normal');
   const [data,setData] = useState<Dataset>(demoDataset);
   const [savedLocally,setSavedLocally] = useState(false);
   const [view,setView] = useState<View>('overview');
@@ -36,6 +37,12 @@ function App() {
     document.documentElement.dataset.theme=theme;
     localStorage.setItem('cauhs-theme',theme);
   },[theme]);
+  useEffect(()=>{
+    const scale:Record<string,string>={smallest:'0.85',small:'0.925',normal:'1',large:'1.1',largest:'1.2'};
+    document.documentElement.dataset.fontSize=fontSize;
+    document.documentElement.style.setProperty('--ui-scale',scale[fontSize]||'1');
+    localStorage.setItem('cauhs-font-size',fontSize);
+  },[fontSize]);
   useEffect(()=>{
     let active=true;
     void readLastUpload().then(saved=>{
@@ -146,6 +153,7 @@ function App() {
       <button className="theme-toggle" type="button" aria-label={theme==='dark'?'라이트 모드로 전환':'다크 모드로 전환'} aria-pressed={theme==='dark'} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>
         {theme==='dark'?<Sun size={16}/>:<Moon size={16}/>}<span>{theme==='dark'?'라이트 모드':'다크 모드'}</span>
       </button>
+      <label className="font-size-control"><span>글자</span><select aria-label="화면 글자 크기" value={fontSize} onChange={e=>setFontSize(e.target.value)}><option value="smallest">아주 작게</option><option value="small">작게</option><option value="normal">보통</option><option value="large">크게</option><option value="largest">아주 크게</option></select></label>
     </header>    <main>
       <header className="topbar"><div className="breadcrumb"><button className="mobile-toggle" onClick={()=>setMobileMenu(!mobileMenu)} aria-label="메뉴 열기"><Menu size={20}/></button><span>직원출장 및 지출결의 내역</span><ChevronRight size={13}/><strong>{titles[view]}</strong></div></header>
       <div className="content">

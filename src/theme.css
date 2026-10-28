@@ -113,6 +113,8 @@
 .service-contact:hover { color: #087f91; text-decoration: underline; }
 :root[data-theme="dark"] .service-contact { color: #a2bdb3; }
 :root[data-theme="dark"] .service-contact:hover { color: #78d6c7; }
+:root[data-theme="dark"] .font-size-control { color: #d8e5e0; }
+:root[data-theme="dark"] .font-size-control select { background: #202d29; border-color: #43544e; color: #e5eeeb; }
 
 @media (max-width: 900px) {
   .theme-toggle { order: 2; margin-left: auto; }
