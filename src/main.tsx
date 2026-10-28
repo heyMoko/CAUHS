@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { ArrowDown, ArrowDownToLine, ArrowUp, ArrowUpDown, ArrowUpRight, Building2, Check, ChevronLeft, ChevronRight, CircleHelp, ClipboardCheck, FileCheck2, FileSpreadsheet, FolderOpen, LayoutDashboard, Search, ShieldCheck, Upload, Users, Wallet, X, AlertCircle, LoaderCircle, RotateCcw, Menu } from 'lucide-react';
 import { categorySpent, csvText, demoDataset, hasMissingDocument, isBlank, missingType, parseWorkbook, phoneOf, spentFor, type Dataset, type RecordItem } from './data';
 import './styles.css';
+import cauhsLogo from './cauhs-logo.png';
 
 type View = 'overview' | 'documents' | 'budgets' | 'upload';
 const money = (v: number) => v.toLocaleString('ko-KR');
@@ -98,24 +99,21 @@ function App() {
   const titles:Record<View,string>={overview:'전체 현황',documents:'서류 확인',budgets:'부서별 예산',upload:'엑셀 업로드'};
   return <div className="app-shell">
     <input ref={input} type="file" accept=".xlsx" className="file-input" aria-label="교육 예산 엑셀 파일 선택" onChange={e=>void load(e.target.files?.[0])}/>
-    <aside className={`sidebar ${mobileMenu?'mobile-open':''}`}>
-      <a className="brand" href="#" onClick={e=>{e.preventDefault();navigate('overview');}}><span className="brand-mark"><span/><span/><span/></span><span>CAUHS<span className="brand-sub">교육예산 관리</span></span></a>
-      <div className="workspace"><span className="workspace-icon"><Building2 size={18}/></span><div><strong>교육행정팀</strong><small>중앙대학교광명병원</small></div><span className="workspace-dot"/></div>
-      <p className="nav-label">WORKSPACE</p>
-      <nav aria-label="주 메뉴">
-        <button className={view==='overview'?'active':''} onClick={()=>navigate('overview')}><LayoutDashboard size={18}/>전체 현황</button>
-        <button className={view==='documents'?'active':''} onClick={()=>navigate('documents')}><FileCheck2 size={18}/>서류 확인<span className="nav-count">{missing.length}</span></button>
-        <button className={view==='budgets'?'active':''} onClick={()=>navigate('budgets')}><Wallet size={18}/>부서별 예산</button>
-        <div className="nav-divider"/>
-        <button className={view==='upload'?'active':''} onClick={()=>navigate('upload')}><Upload size={18}/>엑셀 업로드</button>
-      </nav>
-      <div className="sidebar-bottom"><div className="local-card"><ShieldCheck size={17}/><strong>내 컴퓨터에서 안전하게</strong><p>업로드한 파일은 이 브라우저에서만<br/>처리하며 서버로 전송하지 않습니다.</p></div><button className="help-button" onClick={()=>setModal('help')}><CircleHelp size={17}/>사용 가이드<ArrowUpRight size={14}/></button><div className="sidebar-footer"><span className="avatar">교</span><div><strong>교육행정 담당자</strong><small>로컬 워크스페이스</small></div><span className="version">v0.1</span></div></div>
-    </aside>
+
     {mobileMenu&&<button className="sidebar-scrim" aria-label="메뉴 닫기" onClick={()=>setMobileMenu(false)}/>}
-    <main>
-      <header className="topbar"><div className="breadcrumb"><button className="mobile-toggle" onClick={()=>setMobileMenu(!mobileMenu)} aria-label="메뉴 열기"><Menu size={20}/></button><span>교육예산 관리</span><ChevronRight size={13}/><strong>{titles[view]}</strong></div><div className="topbar-right"><span className="local-dot"/>로컬 미리보기<span className="topbar-divider"/><span className="top-avatar">교</span></div></header>
+    <header className="site-header">
+      <a className="site-brand" href="#" onClick={e=>{e.preventDefault();navigate('overview');}}><img className="brand-logo" src={cauhsLogo} alt="CAUHS"/><span>CAUHS<small>직원출장 및 지출결의 내역</small></span></a>
+      <nav className="main-nav" aria-label="주 메뉴">
+        <button className={view==='overview'?'active':''} onClick={()=>navigate('overview')}><LayoutDashboard size={16}/>전체 현황</button>
+        <button className={view==='documents'?'active':''} onClick={()=>navigate('documents')}><FileCheck2 size={16}/>서류 확인<span className="nav-count">{missing.length}</span></button>
+        <button className={view==='budgets'?'active':''} onClick={()=>navigate('budgets')}><Wallet size={16}/>부서별 예산</button>
+        <button className={view==='upload'?'active':''} onClick={()=>navigate('upload')}><Upload size={16}/>엑셀 업로드</button>
+      </nav>
+      <div className="header-local"><span className="local-dot"/>로컬 미리보기</div>
+    </header>    <main>
+      <header className="topbar"><div className="breadcrumb"><button className="mobile-toggle" onClick={()=>setMobileMenu(!mobileMenu)} aria-label="메뉴 열기"><Menu size={20}/></button><span>직원출장 및 지출결의 내역</span><ChevronRight size={13}/><strong>{titles[view]}</strong></div></header>
       <div className="content">
-        <div className="page-heading"><div><div className="eyebrow">EDUCATION BUDGET WORKSPACE</div><h1>{view==='overview'?'교육 예산, 한눈에.':titles[view]}</h1><p>{view==='overview'?'부서별 예산부터 교육 서류까지, 필요한 정보를 빠르게 확인하세요.':view==='documents'?'영수증·이수증이 비어 있는 교육과 직원 연락처를 확인하세요.':view==='budgets'?'예산부서를 기준으로 확정예산과 등록 교육비, 잔액을 확인하세요.':'관리 중인 엑셀을 올리면 예산과 서류 현황을 바로 정리합니다.'}</p></div><button className="primary" onClick={()=>input.current?.click()} disabled={busy}>{busy?<LoaderCircle size={16} className="spin"/>:<Upload size={16}/>} {busy?'엑셀 읽는 중…':'엑셀 업로드'}</button></div>
+        <div className="page-heading"><div><div className="eyebrow">출장 · 지출결의 관리</div><h1>{view==='overview'?'직원출장 및 지출결의 내역':titles[view]}</h1><p>{view==='overview'?'부서별 확정예산과 교육비 사용 현황, 환급 서류 제출 여부를 한눈에 확인합니다.':view==='documents'?'영수증·이수증이 비어 있는 교육과 직원 연락처를 확인하세요.':view==='budgets'?'예산부서를 기준으로 확정예산과 등록 교육비, 잔액을 확인하세요.':'관리 중인 엑셀을 올리면 예산과 서류 현황을 바로 정리합니다.'}</p></div><button className="primary" onClick={()=>input.current?.click()} disabled={busy}>{busy?<LoaderCircle size={16} className="spin"/>:<Upload size={16}/>} {busy?'엑셀 읽는 중…':'엑셀 업로드'}</button></div>
         {error&&<div className="error-banner" role="alert"><AlertCircle size={18}/><span>{error}</span><button onClick={()=>setError('')} aria-label="오류 닫기"><X size={16}/></button></div>}
         <div className={`source-bar ${data.demo?'demo':''}`}><span className="source-icon"><FileSpreadsheet size={17}/></span><span className="source-filename">{data.filename}</span><span className="source-tag">{data.demo?'체험용 예시':'업로드 완료'}</span><span className="source-meta">{data.demo?'엑셀을 올려 실제 현황을 확인하세요':`${new Date(data.loadedAt).toLocaleString('ko-KR')} 반영`}</span>{!data.demo&&<button className="text-link" onClick={()=>setModal('issues')}>검토 {data.issues.length}건<ChevronRight size={14}/></button>}</div>
 
@@ -160,3 +158,8 @@ function App() {
   </div>;
 }
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
+
+
+
+
+

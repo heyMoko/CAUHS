@@ -147,7 +147,9 @@ export function demoDataset(): Dataset {
     id:`demo:${i}`,employeeId:`D${String(i%12+1).padStart(4,'0')}`,name:names[i%12],department:i%6===0?'142병동':budgets[i%6].department,budgetDepartment:budgets[i%6].department,
     category:i%3===0?'보수교육':'보수교육 외',title:titles[i%6],start:`2026-10-${String(i%20+1).padStart(2,'0')}`,end:`2026-10-${String(i%20+1).padStart(2,'0')}`,
     fee:[40000,180000,120000,90000,250000,60000][i%6],feeText:String([40000,180000,120000,90000,250000,60000][i%6]),
-    receipt:i%5===0||i%5===2?'':'O',certificate:i%5===0||i%5===1?'':'O',phone:'',mobile:`010-0000-${String(i%12+1).padStart(4,'0')}`,extension:'',matched:true,resolution:'2026-10-31',resolutionStatus:i%5>=3?'2026-10-20':'',year:'2026',source:'가상 예시 데이터',row:i+2,
+    receipt:i%5===0||i%5===2?'':'O',certificate:i%5===0||i%5===1?'':'O',phone:'',mobile:'',extension:'',matched:true,resolution:'2026-10-31',resolutionStatus:i%5>=3?'2026-10-20':'',year:'2026',source:'가상 예시 데이터',row:i+2,
   }));
   return {records,budgets,issues:[],employeeCount:12,filename:'샘플 데이터 · 실제 직원 정보가 아닙니다',loadedAt:new Date().toISOString(),demo:true};
 }
+
+
