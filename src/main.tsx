@@ -1,7 +1,8 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ArrowDown, ArrowDownToLine, ArrowUp, ArrowUpDown, ArrowUpRight, Building2, Check, ChevronLeft, ChevronRight, CircleHelp, ClipboardCheck, FileCheck2, FileSpreadsheet, FolderOpen, LayoutDashboard, Search, ShieldCheck, Upload, Users, Wallet, X, AlertCircle, LoaderCircle, RotateCcw, Menu } from 'lucide-react';
 import { categorySpent, csvText, demoDataset, hasMissingDocument, isBlank, missingType, parseWorkbook, phoneOf, spentFor, type Dataset, type RecordItem } from './data';
+import { clearLastUpload, readLastUpload, saveLastUpload } from './persistence';
 import './styles.css';
 import cauhsLogo from './cauhs-logo.png';
 
@@ -10,6 +11,7 @@ const money = (v: number) => v.toLocaleString('ko-KR');
 const collator = new Intl.Collator('ko', {numeric:true});
 function App() {
   const [data,setData] = useState<Dataset>(demoDataset);
+  const [savedLocally,setSavedLocally] = useState(false);
   const [view,setView] = useState<View>('overview');
   const [search,setSearch] = useState('');
   const [department,setDepartment] = useState('all');
@@ -28,6 +30,15 @@ function App() {
   const [includeSeparate,setIncludeSeparate] = useState(false);
   const [budgetSort,setBudgetSort] = useState({key:'department',asc:true});
   const input = useRef<HTMLInputElement>(null);
+  useEffect(()=>{
+    let active=true;
+    void readLastUpload().then(saved=>{
+      if(active&&saved&&!saved.demo){setData(saved);setSavedLocally(true);}
+    }).catch(()=>{
+      if(active)notify('이 브라우저에 저장된 엑셀 데이터를 불러오지 못했습니다.');
+    });
+    return ()=>{active=false;};
+  },[]);
   const notify = (text: string) => { setToast(text); window.setTimeout(()=>setToast(''),3500); };
   const navigate = (next: View) => {setView(next);setMobileMenu(false);setPage(1);};
   const resetFilters = () => {setSearch('');setDepartment('all');setCategory('all');setDocFilter('missing');setPage(1);};
@@ -79,9 +90,26 @@ function App() {
     try {
       const next=await parseWorkbook(await file.arrayBuffer(),file.name);
       setData(next);resetFilters();setIncludeSeparate(false);setBudgetSearch('');setView('overview');
-      notify(`교육 ${money(next.records.length)}건을 불러왔습니다.`);
+      try {
+        await saveLastUpload(next);
+        setSavedLocally(true);
+        notify(`교육 ${money(next.records.length)}건을 불러와 이 브라우저에 저장했습니다.`);
+      } catch {
+        setSavedLocally(false);
+        notify('엑셀은 불러왔지만 브라우저 저장에 실패했습니다. 브라우저 저장공간을 확인해 주세요.');
+      }
     } catch(e) {setError(e instanceof Error?e.message:'파일을 읽지 못했습니다. 올바른 엑셀 파일인지 확인해 주세요.');}
     finally {setBusy(false);if(input.current)input.current.value='';}
+  }
+  async function forgetUpload() {
+    if(!window.confirm('이 브라우저에 저장된 엑셀 데이터를 삭제할까요?')) return;
+    try {
+      await clearLastUpload();
+      setData(demoDataset);setSavedLocally(false);resetFilters();setView('overview');
+      notify('저장된 엑셀 데이터를 삭제했습니다.');
+    } catch {
+      notify('저장된 데이터를 삭제하지 못했습니다.');
+    }
   }
   function download(kind:'documents'|'budgets') {
     const text=kind==='documents'?csvText(['이름','사번','교육명','전화번호','근무부서','위탁예산부서','교육구분','교육종료','교육비/처리','영수증','이수증','원본위치'],filtered.map(r=>[r.name,r.employeeId,r.title,phoneOf(r)||'연락처 없음',r.department,r.budgetDepartment,r.category,r.end,r.fee??r.feeText,r.receipt||'누락',r.certificate||'누락',`${r.source}!${r.row}행`])):csvText(['예산부서','확정예산(원)','등록교육비(원)','잔액(원)','증빙서류누락건수'],budgetRows.map(b=>[b.department,b.amount??'미설정',b.spent,b.amount===null?'미설정':b.amount-b.spent,b.missing]));
@@ -115,7 +143,7 @@ function App() {
       <div className="content">
         <div className="page-heading"><div><div className="eyebrow">출장 · 지출결의 관리</div><h1>{view==='overview'?'직원출장 및 지출결의 내역':titles[view]}</h1><p>{view==='overview'?'부서별 확정예산과 교육비 사용 현황, 환급 서류 제출 여부를 한눈에 확인합니다.':view==='documents'?'영수증·이수증이 비어 있는 교육과 직원 연락처를 확인하세요.':view==='budgets'?'예산부서를 기준으로 확정예산과 등록 교육비, 잔액을 확인하세요.':'관리 중인 엑셀을 올리면 예산과 서류 현황을 바로 정리합니다.'}</p></div><button className="primary" onClick={()=>input.current?.click()} disabled={busy}>{busy?<LoaderCircle size={16} className="spin"/>:<Upload size={16}/>} {busy?'엑셀 읽는 중…':'엑셀 업로드'}</button></div>
         {error&&<div className="error-banner" role="alert"><AlertCircle size={18}/><span>{error}</span><button onClick={()=>setError('')} aria-label="오류 닫기"><X size={16}/></button></div>}
-        <div className={`source-bar ${data.demo?'demo':''}`}><span className="source-icon"><FileSpreadsheet size={17}/></span><span className="source-filename">{data.filename}</span><span className="source-tag">{data.demo?'체험용 예시':'업로드 완료'}</span><span className="source-meta">{data.demo?'엑셀을 올려 실제 현황을 확인하세요':`${new Date(data.loadedAt).toLocaleString('ko-KR')} 반영`}</span>{!data.demo&&<button className="text-link" onClick={()=>setModal('issues')}>검토 {data.issues.length}건<ChevronRight size={14}/></button>}</div>
+        <div className={`source-bar ${data.demo?'demo':''}`}><span className="source-icon"><FileSpreadsheet size={17}/></span><span className="source-filename">{data.filename}</span><span className="source-tag">{data.demo?'체험용 예시':savedLocally?'이 브라우저에 저장됨':'업로드 완료 · 저장 안 됨'}</span><span className="source-meta">{data.demo?'엑셀을 올려 실제 현황을 확인하세요':`${new Date(data.loadedAt).toLocaleString('ko-KR')} 반영`}</span>{!data.demo&&<><button className="text-link" onClick={()=>setModal('issues')}>검토 {data.issues.length}건<ChevronRight size={14}/></button><button className="text-link" onClick={()=>void forgetUpload()}>저장 데이터 삭제</button></>}</div>
 
         {view==='overview'&&<>
           <section className="summary-grid" aria-label="요약 지표">
@@ -147,13 +175,13 @@ function App() {
           <section className="panel"><div className="panel-heading"><div><h2>예산부서별 상세 <span className="count-chip">{budgetRows.length}</span></h2><p>숫자로 입력된 교육비를 원본과 같은 방식으로 합산합니다.</p></div><button className="secondary" onClick={()=>download('budgets')}><ArrowDownToLine size={15}/>CSV 내려받기</button></div><div className="filter-row budget-filter"><label className="search-field"><Search size={17}/><input placeholder="예산부서 검색" aria-label="예산부서 검색" value={budgetSearch} onChange={e=>setBudgetSearch(e.target.value)}/></label><label className="checkbox"><input type="checkbox" checked={includeSeparate} onChange={e=>setIncludeSeparate(e.target.checked)}/>교육행정팀 별도 예산 포함</label></div><div className="table-scroll"><table className="budget-table"><thead><tr>{[['예산부서','department'],['확정예산','amount'],['등록 교육비','spent'],['잔액','balance']].map(([label,key])=><th key={key}><button className="sort-button" onClick={()=>setBudgetSort({key,asc:budgetSort.key===key?!budgetSort.asc:true})}>{label}{budgetSort.key===key?(budgetSort.asc?<ArrowUp size={12}/>:<ArrowDown size={12}/>):<ArrowUpDown size={12}/>}</button></th>)}<th>소진율</th><th>증빙 누락</th><th/></tr></thead><tbody>{budgetRows.map(b=>{const pct=b.amount?b.spent/b.amount*100:null;return <tr key={b.department}><td><strong>{b.department}</strong>{b.separate&&<span className="separate-label">별도</span>}</td><td>{b.amount===null?<span className="no-phone">미설정</span>:money(b.amount)}</td><td>{money(b.spent)}</td><td className={b.amount!==null&&b.amount-b.spent<0?'negative':'balance'}>{b.amount===null?'—':money(b.amount-b.spent)}</td><td><div className="mini-progress"><span><i style={{width:`${Math.min(100,pct??0)}%`}}/></span><small>{pct===null?'—':`${pct.toFixed(1)}%`}</small></div></td><td><button className={`count-link ${b.missing?'has-missing':''}`} onClick={()=>showDocs('missing',b.department)}>{b.missing}건</button></td><td><button className="icon-button" aria-label={`${b.department} 교육 내역`} onClick={()=>showDocs('all',b.department)}><ChevronRight size={16}/></button></td></tr>;})}</tbody></table></div>{!budgetRows.length&&<div className="empty-state"><Wallet size={30}/><h3>표시할 예산부서가 없습니다</h3><p>검색어와 업로드 파일의 예산 시트를 확인해 주세요.</p></div>}<div className="table-bottom"><span>단위: 원</span><span>교육 내역의 ‘위탁예산부서’ 기준</span></div></section><div className="inline-note"><CircleHelp size={15}/><span>등록 교육비에는 증빙 누락·교육 예정 기록도 포함됩니다. 실제 환급 완료 금액이 아닙니다.{includeSeparate&&' 교육행정팀 예산은 원본 내 기준 차이가 있어 합계 해석 시 확인이 필요합니다.'}</span></div>
         </>}
 
-        {view==='upload'&&<div className="upload-layout"><section className="panel upload-panel"><div className={`dropzone ${drag?'dragging':''} ${busy?'loading':''}`} onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);void load(e.dataTransfer.files[0]);}}><span className="upload-illustration">{busy?<LoaderCircle className="spin" size={34}/>:<FileSpreadsheet size={34}/>}</span><h2>{busy?'엑셀을 정리하고 있어요':'엑셀 파일을 여기에 놓아주세요'}</h2><p>또는 아래 버튼을 눌러 파일을 선택하세요.</p><button className="primary" disabled={busy} onClick={()=>input.current?.click()}><Upload size={16}/>파일 선택</button><small>.xlsx 형식 · 최대 30MB</small></div><div className="upload-privacy"><ShieldCheck size={18}/><p><strong>파일은 내 브라우저 안에서만 처리돼요.</strong><br/>새로고침하거나 창을 닫으면 업로드한 데이터가 사라집니다.</p></div></section><section className="upload-guide"><span className="eyebrow">HOW IT WORKS</span><h2>지금 쓰는 엑셀,<br/>그대로 올리면 됩니다.</h2>{[['01','교육 내역 불러오기','보수교육_2026, 보수교육외_2026 시트에서 교육비와 서류 상태를 읽습니다.'],['02','예산과 연락처 연결','부서별 위탁예산과 전직원 명부를 사번으로 연결합니다.'],['03','필요한 정보 바로 찾기','예산 현황을 보고, 영수증·이수증 누락 직원의 이름·사번·교육명·전화번호를 검색하세요.']].map(([n,title,desc])=><div className="guide-step" key={n}><span>{n}</span><div><h3>{title}</h3><p>{desc}</p></div></div>)}<div className="upload-tip"><CircleHelp size={16}/><p>같은 파일을 다시 올리면 현재 데이터를 교체합니다. 교육비가 중복해서 더해지지 않습니다.</p></div></section></div>}
+        {view==='upload'&&<div className="upload-layout"><section className="panel upload-panel"><div className={`dropzone ${drag?'dragging':''} ${busy?'loading':''}`} onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);void load(e.dataTransfer.files[0]);}}><span className="upload-illustration">{busy?<LoaderCircle className="spin" size={34}/>:<FileSpreadsheet size={34}/>}</span><h2>{busy?'엑셀을 정리하고 있어요':'엑셀 파일을 여기에 놓아주세요'}</h2><p>또는 아래 버튼을 눌러 파일을 선택하세요.</p><button className="primary" disabled={busy} onClick={()=>input.current?.click()}><Upload size={16}/>파일 선택</button><small>.xlsx 형식 · 최대 30MB</small></div><div className="upload-privacy"><ShieldCheck size={18}/><p><strong>업로드 데이터는 이 브라우저에만 저장돼요.</strong><br/>같은 브라우저와 기기에서 다시 열면 마지막 엑셀이 복원됩니다. 상단의 ‘저장 데이터 삭제’로 지울 수 있습니다.</p></div></section><section className="upload-guide"><span className="eyebrow">HOW IT WORKS</span><h2>지금 쓰는 엑셀,<br/>그대로 올리면 됩니다.</h2>{[['01','교육 내역 불러오기','보수교육_2026, 보수교육외_2026 시트에서 교육비와 서류 상태를 읽습니다.'],['02','예산과 연락처 연결','부서별 위탁예산과 전직원 명부를 사번으로 연결합니다.'],['03','필요한 정보 바로 찾기','예산 현황을 보고, 영수증·이수증 누락 직원의 이름·사번·교육명·전화번호를 검색하세요.']].map(([n,title,desc])=><div className="guide-step" key={n}><span>{n}</span><div><h3>{title}</h3><p>{desc}</p></div></div>)}<div className="upload-tip"><CircleHelp size={16}/><p>같은 파일을 다시 올리면 현재 데이터를 교체합니다. 교육비가 중복해서 더해지지 않습니다.</p></div></section></div>}
         <footer className="content-footer"><span>CAUHS <i/> 교육예산 관리</span><span>2026 예산연도 <span className="footer-dot">·</span> Sprint 01</span></footer>
       </div>
     </main>
     {toast&&<div className="toast" role="status"><Check size={17}/>{toast}</div>}
     {(modal||detail)&&<div className="modal-overlay" onClick={()=>{setModal(null);setDetail(null);}}><section className="modal" role="dialog" aria-modal="true" aria-label={detail?'교육 상세':modal==='help'?'사용 가이드':'업로드 검토'} onClick={e=>e.stopPropagation()}><button className="modal-close icon-button" aria-label="닫기" onClick={()=>{setModal(null);setDetail(null);}}><X size={20}/></button>
-      {detail?<><span className="eyebrow">EDUCATION DETAIL</span><h2>{detail.name}님의 교육</h2><h3 className="detail-title">{detail.title}</h3><dl className="detail-grid">{[['사번',detail.employeeId],['전화번호',phoneOf(detail)||'연락처 없음'],['근무부서',detail.department],['예산부서',detail.budgetDepartment],['교육구분',detail.category],['예산연도',detail.year],['교육시작',detail.start||'미입력'],['교육종료',detail.end||'미입력'],['교육비',detail.fee===null?detail.feeText||'미입력':`${money(detail.fee)}원`],['지출결의',detail.resolution||'미입력'],['지출결의여부',detail.resolutionStatus||'미입력'],['직원 연결',detail.matched?'직원 명부 연결됨':'직원 명부 미연결']].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><div className="detail-status"><span>영수증 {documentStatus(detail.receipt,'영수증')}</span><span>이수증 {documentStatus(detail.certificate,'이수증')}</span></div><div className="detail-source">원본 위치: {detail.source} · {detail.row}행</div></>:modal==='help'?<><span className="eyebrow">QUICK GUIDE</span><h2>교육예산 관리 사용 가이드</h2><div className="help-content"><h3>1. 파일 올리기</h3><p>상단의 엑셀 업로드 버튼으로 원본 .xlsx 파일을 선택하세요. 처음에는 가상 예시가 표시됩니다.</p><h3>2. 증빙 누락 확인하기</h3><p>증빙서류 누락현황에서 영수증 또는 이수증이 누락된 교육을 확인할 수 있습니다. 이름·사번·교육명·전화번호로 검색하고 열 제목으로 정렬하세요.</p><h3>3. 예산 확인하기</h3><p>부서별 예산은 위탁예산부서 기준입니다. 사용금액은 숫자 교육비 합계이며 실제 환급 완료액과 다릅니다.</p><h3>4. 결과 내려받기</h3><p>현재 필터와 정렬이 적용된 목록을 CSV로 내려받을 수 있습니다.</p><div className="help-note">업로드 파일은 서버에 전송하거나 저장하지 않습니다. 새로고침하면 예시 데이터로 돌아갑니다. 실제 영수증·이수증 파일 검증과 지급 처리는 이번 버전에 포함되지 않습니다.</div></div></>:<><span className="eyebrow">IMPORT REVIEW</span><h2>업로드 검토 <span className="count-chip">{data.issues.length}</span></h2><p className="modal-description">원본 기록은 유지하고 확인이 필요한 항목을 표시했습니다.</p><div className="issue-list">{data.issues.map((issue,i)=><div className="issue" key={i}><AlertCircle size={17}/><div><p>{issue.message}</p><small>{issue.location}</small></div></div>)}{!data.issues.length&&<p>추가로 확인할 항목이 없습니다.</p>}</div></>}
+      {detail?<><span className="eyebrow">EDUCATION DETAIL</span><h2>{detail.name}님의 교육</h2><h3 className="detail-title">{detail.title}</h3><dl className="detail-grid">{[['사번',detail.employeeId],['전화번호',phoneOf(detail)||'연락처 없음'],['근무부서',detail.department],['예산부서',detail.budgetDepartment],['교육구분',detail.category],['예산연도',detail.year],['교육시작',detail.start||'미입력'],['교육종료',detail.end||'미입력'],['교육비',detail.fee===null?detail.feeText||'미입력':`${money(detail.fee)}원`],['지출결의',detail.resolution||'미입력'],['지출결의여부',detail.resolutionStatus||'미입력'],['직원 연결',detail.matched?'직원 명부 연결됨':'직원 명부 미연결']].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><div className="detail-status"><span>영수증 {documentStatus(detail.receipt,'영수증')}</span><span>이수증 {documentStatus(detail.certificate,'이수증')}</span></div><div className="detail-source">원본 위치: {detail.source} · {detail.row}행</div></>:modal==='help'?<><span className="eyebrow">QUICK GUIDE</span><h2>교육예산 관리 사용 가이드</h2><div className="help-content"><h3>1. 파일 올리기</h3><p>상단의 엑셀 업로드 버튼으로 원본 .xlsx 파일을 선택하세요. 처음에는 가상 예시가 표시됩니다.</p><h3>2. 증빙 누락 확인하기</h3><p>증빙서류 누락현황에서 영수증 또는 이수증이 누락된 교육을 확인할 수 있습니다. 이름·사번·교육명·전화번호로 검색하고 열 제목으로 정렬하세요.</p><h3>3. 예산 확인하기</h3><p>부서별 예산은 위탁예산부서 기준입니다. 사용금액은 숫자 교육비 합계이며 실제 환급 완료액과 다릅니다.</p><h3>4. 결과 내려받기</h3><p>현재 필터와 정렬이 적용된 목록을 CSV로 내려받을 수 있습니다.</p><div className="help-note">업로드 데이터는 서버에 전송되지 않고 이 브라우저 저장소에만 보관됩니다. 브라우저 저장 데이터를 지우거나 다른 기기·브라우저를 사용하면 다시 업로드해야 합니다. 실제 영수증·이수증 파일 검증과 지급 처리는 이번 버전에 포함되지 않습니다.</div></div></>:<><span className="eyebrow">IMPORT REVIEW</span><h2>업로드 검토 <span className="count-chip">{data.issues.length}</span></h2><p className="modal-description">원본 기록은 유지하고 확인이 필요한 항목을 표시했습니다.</p><div className="issue-list">{data.issues.map((issue,i)=><div className="issue" key={i}><AlertCircle size={17}/><div><p>{issue.message}</p><small>{issue.location}</small></div></div>)}{!data.issues.length&&<p>추가로 확인할 항목이 없습니다.</p>}</div></>}
     </section></div>}
   </div>;
 }
