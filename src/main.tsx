@@ -1,15 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ArrowDown, ArrowDownToLine, ArrowUp, ArrowUpDown, ArrowUpRight, Building2, Check, ChevronLeft, ChevronRight, CircleHelp, ClipboardCheck, FileCheck2, FileSpreadsheet, FolderOpen, LayoutDashboard, Search, ShieldCheck, Upload, Users, Wallet, X, AlertCircle, LoaderCircle, RotateCcw, Menu } from 'lucide-react';
+import { ArrowDown, ArrowDownToLine, ArrowUp, ArrowUpDown, ArrowUpRight, Building2, Check, ChevronLeft, ChevronRight, CircleHelp, ClipboardCheck, FileCheck2, FileSpreadsheet, FolderOpen, LayoutDashboard, Search, ShieldCheck, Upload, Users, Wallet, X, AlertCircle, LoaderCircle, RotateCcw, Menu, Moon, Sun } from 'lucide-react';
 import { categorySpent, csvText, demoDataset, hasMissingDocument, isBlank, missingType, parseWorkbook, phoneOf, spentFor, type Dataset, type RecordItem } from './data';
 import { clearLastUpload, readLastUpload, saveLastUpload } from './persistence';
 import './styles.css';
+import './theme.css';
 import cauhsLogo from './cauhs-logo.png';
 
 type View = 'overview' | 'documents' | 'budgets' | 'upload';
 const money = (v: number) => v.toLocaleString('ko-KR');
 const collator = new Intl.Collator('ko', {numeric:true});
 function App() {
+  const [theme,setTheme] = useState<'light'|'dark'>(()=>localStorage.getItem('cauhs-theme')==='dark'?'dark':'light');
   const [data,setData] = useState<Dataset>(demoDataset);
   const [savedLocally,setSavedLocally] = useState(false);
   const [view,setView] = useState<View>('overview');
@@ -30,6 +32,10 @@ function App() {
   const [includeSeparate,setIncludeSeparate] = useState(false);
   const [budgetSort,setBudgetSort] = useState({key:'department',asc:true});
   const input = useRef<HTMLInputElement>(null);
+  useEffect(()=>{
+    document.documentElement.dataset.theme=theme;
+    localStorage.setItem('cauhs-theme',theme);
+  },[theme]);
   useEffect(()=>{
     let active=true;
     void readLastUpload().then(saved=>{
@@ -137,6 +143,9 @@ function App() {
         <button className={view==='budgets'?'active':''} onClick={()=>navigate('budgets')}><Wallet size={16}/>부서별 예산</button>
         <button className={view==='upload'?'active':''} onClick={()=>navigate('upload')}><Upload size={16}/>엑셀 업로드</button>
       </nav>
+      <button className="theme-toggle" type="button" aria-label={theme==='dark'?'라이트 모드로 전환':'다크 모드로 전환'} aria-pressed={theme==='dark'} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>
+        {theme==='dark'?<Sun size={16}/>:<Moon size={16}/>}<span>{theme==='dark'?'라이트 모드':'다크 모드'}</span>
+      </button>
     </header>    <main>
       <header className="topbar"><div className="breadcrumb"><button className="mobile-toggle" onClick={()=>setMobileMenu(!mobileMenu)} aria-label="메뉴 열기"><Menu size={20}/></button><span>직원출장 및 지출결의 내역</span><ChevronRight size={13}/><strong>{titles[view]}</strong></div></header>
       <div className="content">
